@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Freestock Calculators</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 32px;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3e50;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            text-align: center;
+            color: #444;
+            margin-bottom: 28px;
+        }
+        h2 {
+            color: #1b5fc6;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+        }
+        .segment {
+            margin-bottom: 32px;
+        }
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-weight: 600;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .row {
+            display: flex;
+            gap: 16px;
+        }
+        .col {
+            flex: 1;
+        }
+        .results {
+            background: #f1f3f6;
+            border-radius: 8px;
+            margin-top: 18px;
+            padding: 18px;
+        }
+        .result-item {
+            margin: 8px 0;
+        }
+        .result-label {
+            font-weight: 500;
+        }
+        button {
+            display: block;
+            background: #2d7ff9;
+            color: #fff;
+            border: none;
+            padding: 18px 0;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 100%;
+            margin: 24px 0 0 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 6px rgba(44,127,249,0.07);
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #1b5fc6;
+        }
+        .button-row {
+            display: flex;
+            gap: 16px;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 12px;
+            }
+            .row, .button-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            input[type="number"], select {
+                font-size: 1em;
+                padding: 16px 8px;
+            }
+            button {
+                font-size: 1em;
+                padding: 16px 0;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Freestock Calculators</h1>
+        <div class="instructions">
+            Enter your values in the input fields below.<br>
+            Click <strong>Calculate Weight</strong> first, then <strong>Calculate Cost & Selling</strong>.
+        </div>
+        <form id="calcForm" autocomplete="off" onsubmit="return false;">
+
+            <!-- Weight Segment -->
+            <div class="segment">
+                <h2>Weight</h2>
+                <div class="row">
+                    <div class="col">
+                        <label for="modeSelect">Calculation Mode</label>
+                        <select id="modeSelect">
+                            <option value="length" selected>Enter Length (meters)</option>
+                            <option value="weight">Enter Total Weight (tons)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label for="width">Width (mm)</label>
+                        <input type="number" id="width" value="925" min="1" step="0.01" required>
+                    </div>
+                    <div class="col">
+                        <label for="thickness">Thickness (mm)</label>
+                        <input type="number" id="thickness" value="0.5" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="col" id="lengthCol">
+                        <label for="lengthM">Length (meters)</label>
+                        <input type="number" id="lengthM" value="1" min="0.001" step="0.001" required>
+                    </div>
+                    <div class="col" id="tonCol" style="display:none;">
+                        <label for="totalTonInput">Total Weight (tons)</label>
+                        <input type="number" id="totalTonInput" value="1" min="0.0001" step="0.0001">
+                    </div>
+                    <div class="col">
+                        <label for="density">Density (g/cm³)</label>
+                        <select id="density">
+                            <option value="8.039" selected>8.039</option>
+                            <option value="7.85">7.85</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button type="button" id="calcWeightBtn">Calculate Weight</button>
+                </div>
+                <div class="results" id="weightResults" style="display:none;">
+                    <div class="result-item"><span class="result-label">kg/m:</span> <span id="kgPerM"></span></div>
+                    <div class="result-item"><span class="result-label">Total meters:</span> <span id="totalMeters"></span></div>
+                    <div class="result-item"><span class="result-label">Total tons:</span> <span id="totalTons"></span></div>
+                    <!-- "Total kg" removed as requested -->
+                </div>
+            </div>
+
+            <!-- Cost Segment -->
+            <div class="segment">
+                <h2>Cost</h2>
+                <div class="row">
+                    <div class="col">
+                        <label for="pricePerKg">Price per kg (R/kg)</label>
+                        <input type="number" id="pricePerKg" value="20" min="0.01" step="0.01" required>
+                    </div>
+                    <div class="col">
+                        <label for="weightEach">Weight each (kg)</label>
+                        <input type="number" id="weightEach" value="4.662" min="0.01" step="0.001" required>
+                    </div>
+                </div>
+                <div class="button-row">
+                    <button type="button" id="calcCostBtn">Calculate Cost & Selling</button>
+                </div>
+                <div class="results" id="costResults" style="display:none;">
+                    <div class="result-item"><span class="result-label">Cost per meter (R):</span> <span id="costPerM"></span></div>
+                    <div class="result-item"><span class="result-label">Cost per ton (R):</span> <span id="costPerTon"></span></div>
+                    <div class="result-item"><span class="result-label">Price each (R):</span> <span id="priceEach"></span></div>
+                </div>
+            </div>
+
+            <!-- Selling Segment -->
+            <div class="segment">
+                <h2>Selling</h2>
+                <div class="row">
+                    <div class="col">
+                        <label for="desiredGP">Desired Gross Profit (%)</label>
+                        <input type="number" id="desiredGP" value="20" min="0" max="100" step="0.01" required>
+                    </div>
+                </div>
+                <div class="results" id="sellingResults" style="display:none;">
+                    <div class="result-item"><span class="result-label">Selling price per meter (R):</span> <span id="sellingPerM"></span></div>
+                    <div class="result-item"><span class="result-label">Selling price per ton (R):</span> <span id="sellingPerTon"></span></div>
+                    <div class="result-item"><span class="result-label">Selling price each (R):</span> <span id="sellingEach"></span></div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Store latest calculated values for use in cost/selling calculations
+        let latestKgPerM = null;
+        let latestTotalMeters = null;
+        let latestTotalKg = null;
+        let latestTotalTons = null;
+
+        // Helper function to round to 4 decimals
+        function r4(val) { return Math.round(val * 10000) / 10000; }
+
+        function calculateWeight() {
+            const mode = document.getElementById('modeSelect').value;
+            const width = parseFloat(document.getElementById('width').value);         // mm
+            const thickness = parseFloat(document.getElementById('thickness').value); // mm
+            const density = parseFloat(document.getElementById('density').value);     // g/cm³
+
+            const kgPerM = r4((width * thickness * density) / 1000);
+
+            let totalMeters = 0, totalKg = 0, totalTons = 0;
+            if (mode === "length") {
+                const lengthM = parseFloat(document.getElementById('lengthM').value); // meters
+                totalMeters = r4(lengthM);
+                totalKg = r4(totalMeters * kgPerM);
+                totalTons = r4(totalKg / 1000);
+            } else {
+                totalTons = parseFloat(document.getElementById('totalTonInput').value); // tons
+                totalKg = r4(totalTons * 1000);
+                totalMeters = r4(totalKg / kgPerM);
+            }
+
+            // Store for later use
+            latestKgPerM = kgPerM;
+            latestTotalMeters = totalMeters;
+            latestTotalKg = totalKg;
+            latestTotalTons = totalTons;
+
+            // Display results
+            document.getElementById('weightResults').style.display = 'block';
+            document.getElementById('kgPerM').textContent = kgPerM + " kg";
+            document.getElementById('totalMeters').textContent = totalMeters + " m";
+            document.getElementById('totalTons').textContent = totalTons + " ton";
+            // "Total kg" display removed as requested
+        }
+
+        function calculateCostSelling() {
+            // Use latest calculated weight values
+            if (latestKgPerM === null || latestTotalKg === null) {
+                alert("Please calculate Weight first.");
+                return;
+            }
+            const pricePerKg = parseFloat(document.getElementById('pricePerKg').value); // R/kg
+            const weightEach = parseFloat(document.getElementById('weightEach').value); // kg
+            const desiredGP = parseFloat(document.getElementById('desiredGP').value) / 100; // as decimal
+
+            // Cost calculations
+            const costPerM = r4(latestKgPerM * pricePerKg);
+            const costPerTon = r4(pricePerKg * 1000);
+            const priceEach = r4(weightEach * pricePerKg);
+
+            // Selling calculations
+            const sellingPerM = r4(costPerM / (1 - desiredGP));
+            const sellingPerTon = r4(costPerTon / (1 - desiredGP));
+            const sellingEach = r4(priceEach / (1 - desiredGP));
+
+            // Display results
+            document.getElementById('costResults').style.display = 'block';
+            document.getElementById('sellingResults').style.display = 'block';
+            document.getElementById('costPerM').textContent = "R " + costPerM;
+            document.getElementById('costPerTon').textContent = "R " + costPerTon;
+            document.getElementById('priceEach').textContent = "R " + priceEach;
+            document.getElementById('sellingPerM').textContent = "R " + sellingPerM;
+            document.getElementById('sellingPerTon').textContent = "R " + sellingPerTon;
+            document.getElementById('sellingEach').textContent = "R " + sellingEach;
+        }
+
+        // Toggle input fields based on mode
+        document.getElementById('modeSelect').addEventListener('change', function() {
+            if (this.value === "length") {
+                document.getElementById('lengthCol').style.display = '';
+                document.getElementById('tonCol').style.display = 'none';
+                document.getElementById('lengthM').required = true;
+                document.getElementById('totalTonInput').required = false;
+            } else {
+                document.getElementById('lengthCol').style.display = 'none';
+                document.getElementById('tonCol').style.display = '';
+                document.getElementById('lengthM').required = false;
+                document.getElementById('totalTonInput').required = true;
+            }
+        });
+
+        document.getElementById('calcWeightBtn').addEventListener('click', function() {
+            calculateWeight();
+        });
+
+        document.getElementById('calcCostBtn').addEventListener('click', function() {
+            calculateCostSelling();
+        });
+    </script>
+</body>
+</html>
